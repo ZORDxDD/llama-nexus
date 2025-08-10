@@ -145,6 +145,76 @@ curl --location 'http://localhost:3389/v1/chat/completions' \
 }'
 ```
 
+### New Responses API (Pre-test Implementation)
+
+The `/responses` endpoint lets Llama-Nexus assemble the complete system prompt and full chat history for each user request server-side. It stores conversation turns either in SQLite (if `--database-url` is provided) or in memory.
+
+Workflow per request:
+1. Load prior (user, assistant) pairs for the session.
+2. Prepend a fixed system prompt.
+3. Append the new user message.
+4. Forward the composed message list to the registered downstream chat server (`/v1/chat/completions`).
+5. Persist the new (user, assistant) turn.
+
+#### Endpoints
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/responses` | Send a new user message, get assistant reply (non-stream). |
+| GET | `/chat/history/{session_id}` | Return flattened textual history. |
+| GET | `/chat/sessions` | List session IDs with stored history. |
+| DELETE | `/chat/sessions/{session_id}` | Delete a session's stored history. |
+
+#### Request
+```json
+POST /responses
+{
+    "session_id": "session-123",
+    "user_message": "Hello there",
+    "model": "Llama-3.2-3b" // optional, first registered model used if omitted
+}
+```
+
+#### Response
+```json
+{
+    "reply": "Hi! How can I help you today?"
+}
+```
+
+#### Example Curl Demo
+```bash
+# 1. Send first turn (model optional if one model registered)
+curl -s -X POST http://localhost:3389/responses \
+    -H "Content-Type: application/json" \
+    -d '{"session_id":"demo-1","user_message":"Hello"}'
+
+# 2. Send follow-up turn
+curl -s -X POST http://localhost:3389/responses \
+    -H "Content-Type: application/json" \
+    -d '{"session_id":"demo-1","user_message":"What can you do?"}'
+
+# 3. Inspect history
+curl -s http://localhost:3389/chat/history/demo-1 | jq
+
+# 4. List sessions
+curl -s http://localhost:3389/chat/sessions | jq
+
+# 5. Delete session
+curl -X DELETE http://localhost:3389/chat/sessions/demo-1 -i
+```
+
+#### Enabling Persistent Storage
+Provide `--database-url` (SQLite) when launching:
+```bash
+llama-nexus --config config.toml --database-url sqlite:history.db
+```
+If omitted, conversations are kept only in memory. The table `chat_messages` is created automatically when using SQLite.
+
+#### Notes
+* The current implementation uses a fixed system prompt: *"You are an AI assistant. Answer as helpfully and concisely as possible."*
+* Streaming via `/responses` is not yet implemented; use `/v1/chat/completions` with `stream=true` for streaming behavior.
+* To adjust the system prompt logic or add per-session prompts, extend `routes/responses.rs`.
+
 ## Command Line Usage
 
 Llama-Nexus provides various command line options to configure the service behavior. You can specify the config file path, enable RAG functionality, set up health checks, configure the Web UI, and manage logging. Here are the available command line options by running `llama-nexus --help`:

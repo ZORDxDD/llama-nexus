@@ -31,6 +31,15 @@ use crate::{
     mcp::{MCP_SERVICES, MCP_TOOLS, McpService},
 };
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct InlineModelConfig {
+    pub id: String,            // logical model id (used by clients)
+    pub kind: String,          // "chat", "embeddings", etc.
+    pub url: String,           // downstream base URL (e.g. https://api.openai.com/v1)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub api_key: Option<String>,
+}
+
 const MCP_REDIRECT_URI: &str = "http://localhost:8080/callback";
 const CALLBACK_PORT: u16 = 8080;
 const CALLBACK_HTML: &str = include_str!("auth/callback.html");
@@ -46,6 +55,8 @@ pub struct Config {
     pub server_health_push_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mcp: Option<McpConfig>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub models: Vec<InlineModelConfig>,
 }
 impl Config {
     pub async fn load(path: impl AsRef<std::path::Path>) -> ServerResult<Self> {
@@ -90,6 +101,7 @@ impl Default for Config {
             server_info_push_url: None,
             server_health_push_url: None,
             mcp: None,
+            models: Vec::new(),
         }
     }
 }

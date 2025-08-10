@@ -1,6 +1,18 @@
 [server]
 host = "127.0.0.1" # The host to listen on.
-port = 3389        # The port to listen on.
+port = 8080        # The port to listen on. (Changed from 3389 to avoid Windows RDP conflict)
+
+[[models]]
+id = "llama3"
+kind = "chat"
+url = "http://127.0.0.1:11434/v1"   # Ollama's API endpoint
+api_key = ""                        # No API key needed for local
+
+# Example: Using Ollama with llama3
+# Make sure Ollama is installed and running:
+#   ollama serve
+# And pull the model:
+#   ollama pull llama3
 
 # Note that, if any of the MCP tool servers are enabled, then please guarantee that the
 # corresponding mcp server is started before starting the LlamaNexus server.

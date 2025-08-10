@@ -1,1 +1,6 @@
 /target
+# Local SQLite databases (chat history)
+data/*.db
+
+# Local installer binary not needed in repo
+/rustup-init.exe
