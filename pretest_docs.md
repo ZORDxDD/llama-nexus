@@ -1,6 +1,6 @@
 # LFX Pre-test: `/responses` API Implementation in Llama Nexus
 
-This document describes the implementation, setup, and demo of the `/responses` API support added for the LFX mentorship pre-test (WasmEdge Issue #4286).
+This document describes the implementation, setup, and demo of the `/responses` API support added for the LFX mentorship pre-test (WasmEdge Issue [#4286](https://github.com/WasmEdge/WasmEdge/issues/4286)).
 
 ## Overview
 The `/responses` API constructs a complete **system prompt** and **chat history** inside Llama Nexus for each user request.  
