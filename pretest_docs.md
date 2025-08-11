@@ -50,7 +50,7 @@ api_key = ""                        # Not needed locally
 
 Ensure Ollama is running and model pulled:
 ```bash
-ollama serve &            # or start-service style on Windows
+ollama serve
 ollama pull llama3
 ```
 
